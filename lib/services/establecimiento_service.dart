@@ -1,50 +1,46 @@
-import 'dart:convert';
+/*import 'dart:convert';
 import 'dart:io';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:hola_mundo/models/establecimiento.dart';
 
 class EstablecimientoService {
-  //! se inicializa dotenv para cargar las variables de entorno
-  final String baseUrl = dotenv.env['URL_API']!;
-  final String baseUrlImg = dotenv.env['URL_API_IMG']!;
+  static const String baseUrl = 'http://10.0.2.2:8080';
+  static const String baseUrlImg = 'http://10.0.2.2:8080/images';
 
-  //! getEstablecimientos
-  /// Obtiene una lista de establecimientos desde la API.
   Future<List<Establecimiento>> getEstablecimientos() async {
-    final response = await http.get(Uri.parse('${baseUrl}establecimientos'));
-    if (response.statusCode == 200) {
-      /// Decodifica la respuesta JSON
-      /// y convierte cada elemento en un objeto Establecimiento.
-       //el cual viene [data] de la API
-      final data = jsonDecode(response.body)['data'];
-      return List<Establecimiento>.from(
-        data.map((item) => Establecimiento.fromJson(item)),
+    try {
+      print('Obteniendo lista de establecimientos...'); // Log para debug
+
+      final response = await http.get(
+        Uri.parse('$baseUrl/establecimientos'),
+        headers: {
+          'Content-Type': 'application/json',
+          // Añade el token si es necesario
+          // 'Authorization': 'Bearer $token',
+        },
       );
-    } else {
-      throw Exception('Error al cargar establecimientos');
+
+      print(
+        'Get Establecimientos - Status: ${response.statusCode}',
+      ); // Log para debug
+      print('Get Establecimientos - Body: ${response.body}'); // Log para debug
+
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonList = jsonDecode(response.body);
+        return jsonList.map((json) => Establecimiento.fromJson(json)).toList();
+      } else {
+        throw Exception(
+          'Error al cargar establecimientos: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      print('Error en getEstablecimientos: $e'); // Log para debug
+      throw Exception('Error al cargar establecimientos: $e');
     }
   }
 
-
-
-  //! getEstablecimiento
-  /// Obtiene un establecimiento específico por su ID desde la API.
-  /// Devuelve un objeto Establecimiento.
-  Future<Establecimiento> getEstablecimiento(int id) async {
-    final response = await http.get(
-      Uri.parse('${baseUrl}establecimientos/$id'),
-    );
-    //** se verifica si la respuesta es 200
-    /// y se decodifica la respuesta JSON
-    if (response.statusCode == 200) {
-      final json = jsonDecode(response.body);
-      return Establecimiento.fromJson(json['data']);
-    } else {
-      throw Exception('Error al obtener el establecimiento');
-    }
-  }
-   Future<bool> deleteEstablecimiento(int id) async {
+  Future<bool> deleteEstablecimiento(int id) async {
     try {
       final response = await http.delete(
         Uri.parse('${baseUrl}establecimientos/$id'),
@@ -55,11 +51,15 @@ class EstablecimientoService {
       throw Exception('Error al eliminar establecimiento: $e');
     }
   }
-  Future<bool> createEstablecimiento(Establecimiento est, {File? logoFile}) async {
-     //Implement the logic to create an Establecimiento
-     //For example, send a request to an API or save it locally
+
+  Future<bool> createEstablecimiento(
+    Establecimiento est, {
+    File? logoFile,
+  }) async {
+    //Implement the logic to create an Establecimiento
+    //For example, send a request to an API or save it locally
     try {
-       final uri = Uri.parse('${baseUrl}establecimientos');
+      final uri = Uri.parse('${baseUrl}establecimientos');
       // Codificar imagen como base64 si existe
       String? base64Image;
       if (logoFile != null) {
@@ -77,8 +77,6 @@ class EstablecimientoService {
       throw Exception('Error al crear establecimiento: $e');
     }
   }
-
-  
 
   //!updateEstablecimiento
   /// Actualiza un establecimiento en la API.
@@ -115,3 +113,4 @@ class EstablecimientoService {
     }
   }
 }
+*/

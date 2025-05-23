@@ -1,15 +1,32 @@
 class User {
   final int id;
-  final String name;
+  final String username;
+  final String firstname;
+  final String lastname;
   final String email;
+  final String phonenumber;
+  final String role;
 
-  User({required this.id, required this.name, required this.email});
+  User({
+    required this.id,
+    required this.username,
+    required this.firstname,
+    required this.lastname,
+    required this.email,
+    required this.phonenumber,
+    required this.role,
+  });
 
-  //* convierte un objeto JSON a un objeto User
-  factory User.fromJson(Map<String, dynamic> json) =>
-      User(id: json['id'], name: json['name'], email: json['email']);
+  factory User.fromJson(Map<String, dynamic> json) => User(
+    id: json['id'],
+    username: json['username'],
+    firstname: json['firstname'] ?? '',
+    lastname: json['lastname'] ?? '',
+    email: json['email'] ?? '',
+    phonenumber: json['phonenumber'] ?? '',
+    role: json['role'] ?? 'USER',
+  );
 
-  //* convierte un objeto User a un objeto JSON
-  //* se usa para enviar el objeto a la API
-  Map<String, dynamic> toJson() => {'id': id, 'name': name, 'email': email};
+  // Getter para mostrar el nombre completo
+  String get name => '$firstname $lastname';
 }

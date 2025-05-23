@@ -1,73 +1,114 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hola_mundo/models/user.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService {
-  final String baseUrl = dotenv.env['URL_API']!;
+  final String baseUrl = 'http://192.168.18.5:8080'; // Actualiza según corresponda
 
-  //! login se encarga de autenticar al usuario
-  Future<Map<String, dynamic>> login(String email, String password) async {
-    final response = await http.post(
-      Uri.parse('${baseUrl}login'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'email': email, 'password': password}),
-    );
+  Future<Map<String, dynamic>> login(String username, String password) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/login'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'username': username,
+          'password': password,
+        }),
+      );
 
-    if (response.statusCode == 200) {
+      print('Register - Response status: ${response.statusCode}');
+      print('Register - Response body: ${response.body}');
+
       final data = jsonDecode(response.body);
-      try {
+      
+      if (response.statusCode == 200) {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('token', data['token']);
-        await prefs.setString('user', jsonEncode(data['user']));
-      } catch (e) {
-        debugPrint('Error al guardar token en SharedPreferences: $e');
+      if (data['user'] != null) {
+          await prefs.setString('user', jsonEncode(data['user']));
+        }
+        return {'success': true, 'token': data['token']};
+      } else {
+        return {
+          'success': false,
+          'message': data['error'] ?? 'Error en login'
+        };
       }
-
-      return {'success': true, 'user': User.fromJson(data['user'])};
-    } else {
-      final data = jsonDecode(response.body);
-      return {'success': false, 'message': data['message'] ?? 'Error en login'};
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Error de conexión: $e'
+      };
     }
   }
 
-  //! register se encarga de registrar al usuario
+
   Future<Map<String, dynamic>> register({
     required String name,
-    required String lastName,
+    required String last_Name,
     required String username,
     required String phone,
     required String email,
     required String password,
   }) async {
-    final response = await http.post(
-      Uri.parse('${baseUrl}users'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'name': name,
-        'last_name': lastName,
-        'username': username,
-        'phone': phone,
-        'email': email,
-        'password': password,
-      }),
-    );
+    try {
+      print('Iniciando registro...'); // Log inicial
+      print('Datos a enviar: username: $username, name: $name, lastname: $last_Name, email: $email, phone: $phone'); // Log de datos
 
-    if (response.statusCode == 201) {
-      return {'success': true};
-    } else {
-      final data = jsonDecode(response.body);
+      final body = jsonEncode({
+        'username': username,
+        'password': password,
+        'firstname': name,
+        'lastname': last_Name,
+        'email': email,
+        'phonenumber': phone,
+        'role': 'USER'
+      });
+
+      print('Body del request: $body'); // Log del body
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/register'),
+        headers: {'Content-Type': 'application/json'},
+        body: body,
+      );
+
+      print('Register - Response status: ${response.statusCode}');
+      print('Register - Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('token', data['token']);
+        return {'success': true};
+      } else {
+        print('Error en registro - Status code: ${response.statusCode}');
+        print('Error en registro - Body: ${response.body}');
+        return {
+          'success': false,
+          'message': 'Error en registro: ${response.statusCode}'
+        };
+      }
+    } catch (e) {
+      print('Error de conexión: $e'); // Log del error
       return {
         'success': false,
-        'message': data['message'] ?? 'Error en registro',
-        'errors': data['errors'],
+        'message': 'Error de conexión: $e'
       };
+    }
+}
+
+  Future<String?> getToken() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getString('token');
+    } catch (e) {
+      print('Error obteniendo token: $e');
+      return null;
     }
   }
 
-  //! getUser se encarga de obtener el usuario
   Future<User?> getUser() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -75,31 +116,23 @@ class AuthService {
       if (userStr != null) {
         return User.fromJson(jsonDecode(userStr));
       }
+      return null;
     } catch (e) {
-      debugPrint('Error al obtener SharedPreferences: $e');
-    }
-    return null;
-  }
-
-  //! getToken se encarga de obtener el token
-  Future<String?> getToken() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      return prefs.getString('token');
-    } catch (e) {
-      debugPrint('Error al obtener token: $e');
+      print('Error obteniendo usuario: $e');
       return null;
     }
   }
 
-  //! isLoggedIn se encarga de verificar si el usuario está logueado
-  Future<void> logout() async {
+  Future<bool> logout() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove('token');
       await prefs.remove('user');
+      return true;
     } catch (e) {
-      debugPrint('Logout error: $e');
+      print('Error en logout: $e');
+      return false;
     }
   }
+  
 }

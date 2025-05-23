@@ -37,7 +37,7 @@ class _LoginPageState extends State<LoginPage> {
 
     if (result['success']) {
       if (!mounted) return;
-      context.go('/establecimientos');
+      context.go('/');
     } else {
       setState(() {
         errorMessage = result['message'] ?? 'Error al iniciar sesión';
@@ -67,18 +67,20 @@ class _LoginPageState extends State<LoginPage> {
               const SizedBox(height: 24),
               TextFormField(
                 controller: emailCtrl,
+                style: const TextStyle(color: Colors.black), // Texto campo
                 decoration: InputDecoration(
-                  hintText: 'Email',
+                  hintText: 'Nombre de usuario',
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(30)),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 20),
                 ),
                 validator: (value) =>
-                    value!.isEmpty ? 'Ingresa tu correo' : null,
+                    value!.isEmpty ? 'Ingresa tu nombre de usuario' : null,
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: passwordCtrl,
+                style: const TextStyle(color: Colors.black), // Texto campo
                 obscureText: obscureText,
                 decoration: InputDecoration(
                   hintText: 'Contraseña',
@@ -94,6 +96,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 validator: (value) =>
                     value!.isEmpty ? 'Ingresa tu contraseña' : null,
+                    
               ),
               const SizedBox(height: 24),
               if (errorMessage != null)

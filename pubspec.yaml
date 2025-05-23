@@ -41,6 +41,7 @@ dependencies:
   shared_preferences: ^2.5.3
   provider: ^6.1.5 
   sign_in_button: ^3.2.0
+  foundation: ^0.0.5
 
 dev_dependencies:
   flutter_test:

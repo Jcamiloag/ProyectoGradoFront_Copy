@@ -33,26 +33,42 @@ class _RegisterPageState extends State<RegisterPage> {
       errorMessage = null;
     });
 
-    final result = await AuthService().register(
-      name: nameCtrl.text.trim(),
-      lastName: lastNameCtrl.text.trim(),
-      username: usernameCtrl.text.trim(),
-      phone: phoneCtrl.text.trim(),
-      email: emailCtrl.text.trim(),
-      password: passwordCtrl.text.trim(),
-    );
+    try {
+      final result = await AuthService().register(
+        username: usernameCtrl.text.trim(),
+        name: nameCtrl.text.trim(),
+        last_Name: lastNameCtrl.text.trim(),   
+        email: emailCtrl.text.trim(),  
+        password: passwordCtrl.text.trim(), 
+        phone: phoneCtrl.text.trim(),          
+      );
 
-    setState(() => isLoading = false);
+      setState(() => isLoading = false);
 
-    if (result['success']) {
-      if (!mounted) return;
-      context.go('/establecimientos');
-    } else {
+      if (result['success']) {
+        if (!mounted) return;
+        // Añade un pequeño delay antes de la navegación
+        await Future.delayed(const Duration(milliseconds: 500));
+        if (!mounted) return;
+        context.go('/');
+        
+        // Muestra un mensaje de éxito
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Registro exitoso')),
+        );
+      } else {
+        setState(() {
+          errorMessage = result['message'] ?? 'Error al registrarse';
+        });
+      }
+    } catch (e) {
       setState(() {
-        errorMessage = result['message'] ?? 'Error al registrarse';
+        isLoading = false;
+        errorMessage = 'Error inesperado: $e';
       });
     }
-  }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -71,6 +87,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
               TextFormField(
                 controller: nameCtrl,
+                style: const TextStyle(color: Colors.black), // Texto campo
                 decoration: _inputDecoration("Nombres"),
                 validator: (value) =>
                     value!.isEmpty ? 'Ingresa tu nombre' : null,
@@ -79,6 +96,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
               TextFormField(
                 controller: lastNameCtrl,
+                style: const TextStyle(color: Colors.black), // Texto campo
                 decoration: _inputDecoration("Apellidos"),
                 validator: (value) =>
                     value!.isEmpty ? 'Ingresa tus apellidos' : null,
@@ -87,6 +105,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
               TextFormField(
                 controller: usernameCtrl,
+                style: const TextStyle(color: Colors.black), // Texto campo
                 decoration: _inputDecoration("Nombre de usuario"),
                 validator: (value) =>
                     value!.isEmpty ? 'Ingresa un nombre de usuario' : null,
@@ -95,6 +114,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
               TextFormField(
                 controller: phoneCtrl,
+                style: const TextStyle(color: Colors.black), // Texto campo
                 keyboardType: TextInputType.phone,
                 decoration: _inputDecoration("Teléfono"),
                 validator: (value) =>
@@ -104,6 +124,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
               TextFormField(
                 controller: emailCtrl,
+                style: const TextStyle(color: Colors.black), // Texto campo
                 decoration: _inputDecoration("Email"),
                 validator: (value) =>
                     value!.isEmpty ? 'Ingresa tu correo' : null,
@@ -112,6 +133,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
               TextFormField(
                 controller: passwordCtrl,
+                style: const TextStyle(color: Colors.black), // Texto campo
                 obscureText: obscureText,
                 decoration: _inputDecoration("Contraseña").copyWith(
                   suffixIcon: IconButton(

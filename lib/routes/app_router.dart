@@ -16,10 +16,6 @@ import 'package:hola_mundo/views/timer/timer_view.dart';
 import 'package:hola_mundo/views/isolate/isolate_view.dart';
 
 
-// Vistas de establecimientos
-import 'package:hola_mundo/views/establecimientos/establecimiento_edit_view.dart';
-import 'package:hola_mundo/views/establecimientos/establecimiento_create_views.dart';
-
 final GoRouter appRouter = GoRouter(
   routes: [
     // Home y generales
@@ -56,38 +52,12 @@ final GoRouter appRouter = GoRouter(
       builder: (context, state) => const IsolateView(),
     ),
 
-    // Perros
-    
-
-    // Establecimientos
-    GoRoute(
-      path: '/establecimientos',
-      builder: (context, state) => const EstablecimientosListView(),
-    ),
-    GoRoute(
-      path: '/establecimientos',
-      name: 'establecimientos',
-      builder: (context, state) => const EstablecimientosListView(),
-    ),
-    //!Ruta para editar de un establecimiento
-    GoRoute(
-      path: '/establecimientos/edit/:id',
-      builder: (context, state) {
-        //*se captura el id del establecimiento
-        final id = int.parse(state.pathParameters['id']!);
-        return EstablecimientoEditView(id: id);
-      },
-    ),
-    GoRoute(
-      path: '/establecimientos/create',
-      builder: (context, state) => const EstablecimientoCreateView(),
-    ),
     //!Ruta para autenticacion
     GoRoute(
       path: '/login',
       name: 'login',
       builder: (context, state) => const AuthTabsPage(), // Redirige al AuthTabsPage
-    ),
+    ),   
     GoRoute(
       path: '/register',
       name: 'register',
@@ -101,3 +71,4 @@ final GoRouter appRouter = GoRouter(
     ),
   ],
 );
+
