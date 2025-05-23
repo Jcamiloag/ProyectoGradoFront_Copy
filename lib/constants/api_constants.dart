@@ -1,1 +1,1 @@
-const baseUrl = 'http://192.168.18.5:8080';
+const baseUrl = 'http://192.168.0.2:8080';

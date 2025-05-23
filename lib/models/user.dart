@@ -17,16 +17,29 @@ class User {
     required this.role,
   });
 
-  factory User.fromJson(Map<String, dynamic> json) => User(
-    id: json['id'],
-    username: json['username'],
-    firstname: json['firstname'] ?? '',
-    lastname: json['lastname'] ?? '',
-    email: json['email'] ?? '',
-    phonenumber: json['phonenumber'] ?? '',
-    role: json['role'] ?? 'USER',
-  );
-
-  // Getter para mostrar el nombre completo
   String get name => '$firstname $lastname';
+
+  factory User.fromJson(Map<String, dynamic> json) {
+    return User(
+      id: json['id'],
+      username: json['username'],
+      firstname: json['firstname'],
+      lastname: json['lastname'],
+      email: json['email'],
+      phonenumber: json['phonenumber'],
+      role: json['role'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'username': username,
+      'firstname': firstname,
+      'lastname': lastname,
+      'email': email,
+      'phonenumber': phonenumber,
+      'role': role,
+    };
+  }
 }
