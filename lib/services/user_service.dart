@@ -1,10 +1,11 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:hola_mundo/constants/api_constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hola_mundo/models/user.dart';
 
 class UserService {
-  final String baseUrl = "http://192.168.0.2:8080"; // Cambia por tu backend
+  final String baseUrl = AppConstants.baseUrl;// Cambia por tu backend
 
   /// Obtiene el perfil del usuario actualmente autenticado.
   /// Lanza excepción si falla la petición o no existe usuario.

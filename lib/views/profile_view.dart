@@ -51,7 +51,7 @@ class _ProfileViewState extends State<ProfileView> {
               : SingleChildScrollView(
                   child: Column(
                     children: [
-                      Container(
+                      SizedBox(
                         width: 140,
                         child: Stack(
                           children: [

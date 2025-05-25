@@ -1,11 +1,12 @@
 import 'dart:convert';
+import 'package:hola_mundo/constants/api_constants.dart';
 import 'package:hola_mundo/models/user.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 
 class AuthService {
-  final String baseUrl = 'http://192.168.0.2:8080'; // Actualiza según corresponda
+  final String baseUrl = AppConstants.baseUrl; // Actualiza según corresponda
 
   Future<Map<String, dynamic>> login(String username, String password) async {
     try {
