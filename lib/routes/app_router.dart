@@ -1,6 +1,9 @@
 import 'package:go_router/go_router.dart';
+import 'package:flutter/material.dart';
 import 'package:hola_mundo/views/auth/auth_tabs_page.dart';
+import 'package:hola_mundo/views/auth/login_page.dart';
 import 'package:hola_mundo/views/auth/register_page.dart' as authRegister;
+import 'package:hola_mundo/views/establecimientos/establecimiento_list_view.dart';
 
 // Vistas generales
 import 'package:hola_mundo/views/home_view.dart';
@@ -12,8 +15,8 @@ import 'package:hola_mundo/views/future/future_view.dart';
 import 'package:hola_mundo/views/timer/timer_view.dart';
 import 'package:hola_mundo/views/isolate/isolate_view.dart';
 
-
 final GoRouter appRouter = GoRouter(
+  initialLocation: '/login',  // 👈 Cambiado para iniciar en login
   routes: [
     // Home y generales
     GoRoute(
@@ -28,9 +31,6 @@ final GoRouter appRouter = GoRouter(
       path: '/profile',
       builder: (context, state) => const ProfileView(),
     ),
-
-    // Paso de parámetros
-   
 
     // Otros ejemplos
     GoRoute(
@@ -53,13 +53,14 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/login',
       name: 'login',
-      builder: (context, state) => const AuthTabsPage(), // Redirige al AuthTabsPage
+      builder: (context, state) => const AuthTabsPage(), // Pantalla login/register
     ),   
     GoRoute(
       path: '/register',
       name: 'register',
       builder: (context, state) => const authRegister.RegisterPage(),
     ),
+    
     //!Ruta para el demo de Provider
     GoRoute(
       path: '/cambiar-tema',
@@ -68,4 +69,3 @@ final GoRouter appRouter = GoRouter(
     ),
   ],
 );
-

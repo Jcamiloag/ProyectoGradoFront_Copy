@@ -51,57 +51,7 @@ class _ProfileViewState extends State<ProfileView> {
               : SingleChildScrollView(
                   child: Column(
                     children: [
-                      SizedBox(
-                        width: 140,
-                        child: Stack(
-                          children: [
-                            Align(
-                              alignment: const Alignment(0, 0),
-                              child: Padding(
-                                padding: const EdgeInsets.only(top: 12),
-                                child: Container(
-                                  width: 100,
-                                  height: 100,
-                                  decoration: const BoxDecoration(
-                                    color: Colors.white,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(2),
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(50),
-                                      child: Image.network(
-                                        'https://images.unsplash.com/photo-1633332755192-727a05c4013d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8Mnx8dXNlcnxlbnwwfHwwfHw%3D&auto=format&fit=crop&w=900&q=60',
-                                        width: 100,
-                                        height: 100,
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Align(
-                              alignment: const Alignment(1, 0),
-                              child: Padding(
-                                padding: const EdgeInsets.only(top: 12),
-                                child: Container(
-                                  width: 44,
-                                  height: 44,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: Colors.grey,
-                                      width: 4,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                      // Aquí eliminé la imagen para que puedas añadirla después donde gustes.
 
                       Padding(
                         padding: const EdgeInsets.fromLTRB(0, 16, 0, 12),
@@ -204,7 +154,8 @@ class _ProfileViewState extends State<ProfileView> {
                                   final result = await Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => ProfileEditView(user: _user!),
+                                      builder: (context) =>
+                                          ProfileEditView(user: _user!),
                                     ),
                                   );
                                   if (result != null && result is User) {
