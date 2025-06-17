@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hola_mundo/services/auth_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
   final bool isTabMode;
@@ -35,6 +36,9 @@ class _LoginPageState extends State<LoginPage> {
     setState(() => isLoading = false);
 
     if (result['success']) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('username', emailCtrl.text.trim());
+
       if (!mounted) return;
       context.go('/');
     } else {
@@ -78,11 +82,11 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 child: TextFormField(
                   controller: emailCtrl,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     hintText: 'Nombre de usuario',
                     border: InputBorder.none,
                     prefixIcon: Icon(Icons.mail_outline),
-                    contentPadding: const EdgeInsets.symmetric(vertical: 18),
+                    contentPadding: EdgeInsets.symmetric(vertical: 18),
                   ),
                   validator: (value) =>
                       value!.isEmpty ? 'Ingresa tu nombre de usuario' : null,
@@ -109,7 +113,7 @@ class _LoginPageState extends State<LoginPage> {
                   decoration: InputDecoration(
                     hintText: 'Contraseña',
                     border: InputBorder.none,
-                    prefixIcon: Icon(Icons.lock_outline),
+                    prefixIcon: const Icon(Icons.lock_outline),
                     suffixIcon: IconButton(
                       icon: Icon(obscureText
                           ? Icons.visibility_off
@@ -144,14 +148,14 @@ class _LoginPageState extends State<LoginPage> {
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(30),
-                    gradient: LinearGradient(
+                    gradient: const LinearGradient(
                       colors: [Colors.redAccent, Colors.red],
                     ),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.red.withOpacity(0.4),
                         blurRadius: 8,
-                        offset: Offset(0, 4),
+                        offset: const Offset(0, 4),
                       )
                     ],
                   ),
