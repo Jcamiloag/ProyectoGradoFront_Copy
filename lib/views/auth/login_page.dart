@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:sign_in_button/sign_in_button.dart';
 import 'package:hola_mundo/services/auth_service.dart';
 
 class LoginPage extends StatefulWidget {
@@ -47,81 +46,153 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final primaryColor = Colors.redAccent;
+
     return Padding(
       padding: const EdgeInsets.all(24.0),
       child: SingleChildScrollView(
         child: Form(
           key: _formKey,
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text("Iniciar sesión",
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                  )),
               const SizedBox(height: 8),
               const Text(
-                "Comencemos completando el formulario a continuación.",
-                textAlign: TextAlign.center,
+                "Ingresa para continuar tu camino con Farfala",
+                style: TextStyle(color: Colors.grey),
               ),
-              const SizedBox(height: 24),
-              TextFormField(
-                controller: emailCtrl,
-                style: const TextStyle(color: Colors.black), // Texto campo
-                decoration: InputDecoration(
-                  hintText: 'Nombre de usuario',
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(30)),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+              const SizedBox(height: 32),
+
+              // Email field
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.grey[100],
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 4,
+                      offset: Offset(0, 2),
+                    )
+                  ],
                 ),
-                validator: (value) =>
-                    value!.isEmpty ? 'Ingresa tu nombre de usuario' : null,
+                child: TextFormField(
+                  controller: emailCtrl,
+                  decoration: InputDecoration(
+                    hintText: 'Nombre de usuario',
+                    border: InputBorder.none,
+                    prefixIcon: Icon(Icons.mail_outline),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 18),
+                  ),
+                  validator: (value) =>
+                      value!.isEmpty ? 'Ingresa tu nombre de usuario' : null,
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Password field
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.grey[100],
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 4,
+                      offset: Offset(0, 2),
+                    )
+                  ],
+                ),
+                child: TextFormField(
+                  controller: passwordCtrl,
+                  obscureText: obscureText,
+                  decoration: InputDecoration(
+                    hintText: 'Contraseña',
+                    border: InputBorder.none,
+                    prefixIcon: Icon(Icons.lock_outline),
+                    suffixIcon: IconButton(
+                      icon: Icon(obscureText
+                          ? Icons.visibility_off
+                          : Icons.visibility),
+                      onPressed: () =>
+                          setState(() => obscureText = !obscureText),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 18),
+                  ),
+                  validator: (value) =>
+                      value!.isEmpty ? 'Ingresa tu contraseña' : null,
+                ),
               ),
               const SizedBox(height: 16),
-              TextFormField(
-                controller: passwordCtrl,
-                style: const TextStyle(color: Colors.black), // Texto campo
-                obscureText: obscureText,
-                decoration: InputDecoration(
-                  hintText: 'Contraseña',
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(30)),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 20),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                        obscureText ? Icons.visibility_off : Icons.visibility),
-                    onPressed: () =>
-                        setState(() => obscureText = !obscureText),
-                  ),
-                ),
-                validator: (value) =>
-                    value!.isEmpty ? 'Ingresa tu contraseña' : null,
-                    
-              ),
-              const SizedBox(height: 24),
+
+              // Error message
               if (errorMessage != null)
-                Text(errorMessage!, style: const TextStyle(color: Colors.red)),
-              const SizedBox(height: 8),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Text(
+                    errorMessage!,
+                    style: const TextStyle(color: Colors.red),
                   ),
-                  minimumSize: const Size(double.infinity, 50),
                 ),
-                onPressed: isLoading ? null : login,
-                child: isLoading
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text("Ingresar",
-                        style: TextStyle(color: Colors.white)),
+
+              // Login Button
+              GestureDetector(
+                onTap: isLoading ? null : login,
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(30),
+                    gradient: LinearGradient(
+                      colors: [Colors.redAccent, Colors.red],
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.red.withOpacity(0.4),
+                        blurRadius: 8,
+                        offset: Offset(0, 4),
+                      )
+                    ],
+                  ),
+                  child: isLoading
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text(
+                          "INICIAR SESIÓN",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1,
+                          ),
+                        ),
+                ),
               ),
+
               const SizedBox(height: 24),
-              const Text("Or sign up with"),
-              const SizedBox(height: 12),
-              SignInButton(Buttons.google, onPressed: () {}),
-              const SizedBox(height: 8),
-              SignInButton(Buttons.apple, onPressed: () {}),
+
+              // Extra
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text("¿No tienes una cuenta? "),
+                  GestureDetector(
+                    onTap: () {
+                      if (!widget.isTabMode) {
+                        context.go('/register');
+                      } else {
+                        DefaultTabController.of(context).animateTo(1);
+                      }
+                    },
+                    child: Text(
+                      "Crear cuenta",
+                      style: TextStyle(
+                        color: primaryColor,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  )
+                ],
+              ),
             ],
           ),
         ),
