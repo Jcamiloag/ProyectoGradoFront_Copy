@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hola_mundo/services/auth_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 
 class LoginPage extends StatefulWidget {
   final bool isTabMode;
@@ -36,8 +37,23 @@ class _LoginPageState extends State<LoginPage> {
     setState(() => isLoading = false);
 
     if (result['success']) {
+      final token = result['token'];
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('username', emailCtrl.text.trim());
+
+      try {
+        final decodedToken = JwtDecoder.decode(token);
+        final role = decodedToken['role'] ?? 'USER';
+        final name = decodedToken['name'] ?? emailCtrl.text.trim(); // usar nombre si viene
+
+        await prefs.setString('token', token);
+        await prefs.setString('username', name); // guardar nombre, no correo
+        await prefs.setString('rol', role);
+      } catch (e) {
+        setState(() {
+          errorMessage = 'Error al procesar el token';
+        });
+        return;
+      }
 
       if (!mounted) return;
       context.go('/');
@@ -83,13 +99,13 @@ class _LoginPageState extends State<LoginPage> {
                 child: TextFormField(
                   controller: emailCtrl,
                   decoration: const InputDecoration(
-                    hintText: 'Nombre de usuario',
+                    hintText: 'Email',
                     border: InputBorder.none,
                     prefixIcon: Icon(Icons.mail_outline),
                     contentPadding: EdgeInsets.symmetric(vertical: 18),
                   ),
                   validator: (value) =>
-                      value!.isEmpty ? 'Ingresa tu nombre de usuario' : null,
+                      value!.isEmpty ? 'Ingresa tu Email' : null,
                 ),
               ),
               const SizedBox(height: 20),
@@ -129,7 +145,6 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 16),
 
-              // Error message
               if (errorMessage != null)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 12),
@@ -174,7 +189,6 @@ class _LoginPageState extends State<LoginPage> {
 
               const SizedBox(height: 24),
 
-              // Extra
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hola_mundo/views/base_view.dart';
-import 'package:hola_mundo/views/all_classes_page.dart';
+import 'package:hola_mundo/views/clases/all_classes_page.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
@@ -73,7 +73,8 @@ class _HomeViewState extends State<HomeView> {
                     children: [
                       const CircleAvatar(
                         radius: 28,
-                        backgroundImage: AssetImage('assets/images/usuario.png'),
+                        backgroundColor: Colors.grey,
+                        child: Icon(Icons.person, size: 28, color: Colors.white),
                       ),
                       const SizedBox(width: 12),
                       Column(

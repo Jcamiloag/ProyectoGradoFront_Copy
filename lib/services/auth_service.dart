@@ -1,42 +1,45 @@
 import 'dart:convert';
-import 'package:hola_mundo/constants/api_constants.dart';
-import 'package:hola_mundo/models/user.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hola_mundo/constants/api_constants.dart';
+import 'package:hola_mundo/models/user.dart';
 
 class AuthService {
   final String baseUrl = AppConstants.baseUrl;
 
-  Future<Map<String, dynamic>> login(String username, String password) async {
+  Future<Map<String, dynamic>> login(String email, String password) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/auth/login'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'username': username,
-          'password': password,
-        }),
+        body: jsonEncode({'email': email, 'password': password}),
       );
 
       final data = jsonDecode(response.body);
-      
+
       if (response.statusCode == 200) {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('token', data['token']);
-        if (data['user'] != null) {
-          await prefs.setString('user', jsonEncode(data['user']));
+        
+        if (data['username'] != null) {
+          await prefs.setString('username', data['username']);
         }
+
+        if (data['role'] != null) {
+          await prefs.setString('role', data['role']); // <-- GUARDAMOS EL ROL
+        }
+
         return {'success': true, 'token': data['token']};
       } else {
         return {
           'success': false,
-          'message': data['error'] ?? 'Error en login'
+          'message': data['error'] ?? 'Error en login',
         };
       }
     } catch (e) {
       return {
         'success': false,
-        'message': 'Error de conexión: $e'
+        'message': 'Error de conexión: $e',
       };
     }
   }
@@ -57,7 +60,7 @@ class AuthService {
         'lastname': last_Name,
         'email': email,
         'phonenumber': phone,
-        'role': 'USER'
+        'role': 'USER', // Este campo lo ignora el backend si ya lo asigna por correo
       });
 
       final response = await http.post(
@@ -66,24 +69,31 @@ class AuthService {
         body: body,
       );
 
+      final data = jsonDecode(response.body);
+
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('token', data['token']);
-        if (data['user'] != null) {
-          await prefs.setString('user', jsonEncode(data['user']));
+        
+        if (data['username'] != null) {
+          await prefs.setString('username', data['username']);
         }
+
+        if (data['role'] != null) {
+          await prefs.setString('role', data['role']); // <-- GUARDAMOS EL ROL
+        }
+
         return {'success': true};
       } else {
         return {
           'success': false,
-          'message': 'Error en registro: ${response.statusCode}'
+          'message': 'Error en registro: ${response.statusCode}',
         };
       }
     } catch (e) {
       return {
         'success': false,
-        'message': 'Error de conexión: $e'
+        'message': 'Error de conexión: $e',
       };
     }
   }
@@ -91,6 +101,16 @@ class AuthService {
   Future<String?> getToken() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('token');
+  }
+
+  Future<String?> getUsername() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('username');
+  }
+
+  Future<String?> getRole() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('role'); // <-- para saber si es ADMIN o USER
   }
 
   Future<User?> getUser() async {
@@ -106,8 +126,8 @@ class AuthService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('token');
     await prefs.remove('user');
+    await prefs.remove('username');
+    await prefs.remove('role'); // <-- eliminamos el rol al cerrar sesión
     return true;
   }
 }
-
-
