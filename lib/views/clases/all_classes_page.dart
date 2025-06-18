@@ -102,7 +102,7 @@ class _AllClassesPageState extends State<AllClassesPage> {
                         ),
                       ],
                     );
-                  }).toList(),
+                  }),
                   TextButton.icon(
                     onPressed: () {
                       setStateDialog(() => horarioControllers.add(TextEditingController()));

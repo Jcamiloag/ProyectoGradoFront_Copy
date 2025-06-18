@@ -1,9 +1,6 @@
 import 'package:go_router/go_router.dart';
-import 'package:flutter/material.dart';
 import 'package:hola_mundo/views/auth/auth_tabs_page.dart';
-import 'package:hola_mundo/views/auth/login_page.dart';
 import 'package:hola_mundo/views/auth/register_page.dart' as authRegister;
-import 'package:hola_mundo/views/establecimientos/establecimiento_list_view.dart';
 
 // Vistas generales
 import 'package:hola_mundo/views/home_view.dart';

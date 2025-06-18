@@ -2,12 +2,13 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:hola_mundo/models/clase.dart';
 import 'package:hola_mundo/models/horario_clase.dart';
+import 'package:hola_mundo/config.dart'; 
 
 class ClaseService {
-  final String baseUrl = 'http://localhost:8080/api/clases'; // Cambia por tu IP real si es necesario
+  final String claseUrl = '$baseUrl/clases'; // Cambia por tu IP real si es necesario
 
   Future<List<Clase>> getClases() async {
-    final response = await http.get(Uri.parse(baseUrl));
+    final response = await http.get(Uri.parse(claseUrl));
     if (response.statusCode == 200) {
       final List<dynamic> body = jsonDecode(response.body);
       return body.map((json) => Clase.fromJson(json)).toList();
@@ -18,7 +19,7 @@ class ClaseService {
 
   Future<Clase> addClase(Clase clase) async {
     final response = await http.post(
-      Uri.parse(baseUrl),
+      Uri.parse(claseUrl),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(clase.toJson()),
     );
@@ -40,7 +41,7 @@ class ClaseService {
 
   Future<void> updateClase(Clase clase) async {
     final response = await http.put(
-      Uri.parse("$baseUrl/${clase.id}"),
+      Uri.parse("$claseUrl/${clase.id}"),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(clase.toJson()),
     );
@@ -51,7 +52,7 @@ class ClaseService {
   }
 
   Future<void> deleteClase(int id) async {
-    final response = await http.delete(Uri.parse("$baseUrl/$id"));
+    final response = await http.delete(Uri.parse("$claseUrl/$id"));
 
     if (response.statusCode != 200) {
       throw Exception("Error al eliminar la clase");
@@ -60,7 +61,7 @@ class ClaseService {
 
   Future<void> agregarHorario(int claseId, HorarioClase horario) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/$claseId/horarios'),
+      Uri.parse('$claseUrl/$claseId/horarios'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(horario.toJson()),
     );
