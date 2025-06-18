@@ -37,10 +37,8 @@ class BaseView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(title), backgroundColor: Colors.red),
-      drawer: const CustomDrawer(),
+      appBar: null,
       body: body,
-      floatingActionButton: floatingActionButton,
     );
   }
 }
