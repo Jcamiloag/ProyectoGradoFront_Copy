@@ -21,7 +21,7 @@ class RootScaffoldWithNavBar extends StatelessWidget {
       drawer: const CustomDrawer(),
       body: SafeArea(child: navigationShell),
       bottomNavigationBar: _buildBottomNavBar(context),
-      floatingActionButton: _buildFloatingActionButton(context),
+      //floatingActionButton: _buildFloatingActionButton(context),
     );
   }
 
@@ -89,22 +89,6 @@ class RootScaffoldWithNavBar extends StatelessWidget {
     );
   }
 
-  Widget? _buildFloatingActionButton(BuildContext context) {
-    switch (navigationShell.currentIndex) {
-      case 1: // Reservations tab
-        return FloatingActionButton(
-          child: const Icon(Icons.add),
-          onPressed: () => _showAddReservationDialog(context),
-        );
-      case 2: // Payments tab
-        return FloatingActionButton(
-          child: const Icon(Icons.payment),
-          onPressed: () => _showPaymentSheet(context),
-        );
-      default:
-        return null;
-    }
-  }
 
   void _onItemTapped(int index, BuildContext context) {
     navigationShell.goBranch(
@@ -113,27 +97,6 @@ class RootScaffoldWithNavBar extends StatelessWidget {
     );
   }
 
-  void _showAddReservationDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Nueva Reserva'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
-          ),
-          FilledButton(
-            onPressed: () {
-              Navigator.pop(context);
-              context.push('/reservations/new');
-            },
-            child: const Text('Continuar'),
-          ),
-        ],
-      ),
-    );
-  }
 
   void _showPaymentSheet(BuildContext context) {
     showModalBottomSheet(

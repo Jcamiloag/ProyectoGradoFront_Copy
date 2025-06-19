@@ -3,6 +3,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hola_mundo/provider/theme_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:hola_mundo/routes/app_router.dart';
+import 'package:intl/date_symbol_data_local.dart';
+
 
 import 'themes/app_theme.dart'; // Importa el tema
 
@@ -11,6 +13,7 @@ void main() async {
 
   //! Carga el archivo .env en la raíz del proyecto
   await dotenv.load(fileName: ".env");
+  await initializeDateFormatting('es_ES', null); // Aquí se inicializa la localización
 
   //! Ejecuta la app con Provider
   runApp(

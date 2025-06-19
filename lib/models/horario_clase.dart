@@ -1,9 +1,11 @@
-
 class HorarioClase {
   String hora;
-  String? fecha;
+  String fecha;
 
-  HorarioClase({required this.hora, this.fecha});
+  HorarioClase({
+    required this.hora,
+    required this.fecha,
+  });
 
   factory HorarioClase.fromJson(Map<String, dynamic> json) {
     return HorarioClase(

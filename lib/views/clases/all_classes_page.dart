@@ -57,16 +57,26 @@ class _AllClassesPageState extends State<AllClassesPage> {
 
   void mostrarFormularioClase({Clase? clase}) {
     final nombreController = TextEditingController(text: clase?.nombre ?? '');
-    final descripcionController = TextEditingController(text: clase?.descripcion ?? '');
-    final categoriaController = TextEditingController(text: clase?.categoria ?? '');
+    final descripcionController = TextEditingController(
+      text: clase?.descripcion ?? '',
+    );
+    final categoriaController = TextEditingController(
+      text: clase?.categoria ?? '',
+    );
 
-    List<TextEditingController> horarioControllers = (clase?.horarios ?? [])
-        .map((h) => TextEditingController(text: h.hora ?? ''))
-        .toList();
+    List<TimeOfDay?> horasSeleccionadas =
+        (clase?.horarios ?? []).map((h) {
+      final partes = h.hora?.split(":") ?? [];
+      if (partes.length == 2) {
+        return TimeOfDay(
+          hour: int.tryParse(partes[0]) ?? 0,
+          minute: int.tryParse(partes[1]) ?? 0,
+        );
+      }
+      return null;
+    }).toList();
 
-    if (horarioControllers.isEmpty) {
-      horarioControllers.add(TextEditingController());
-    }
+    if (horasSeleccionadas.isEmpty) horasSeleccionadas.add(null);
 
     showDialog(
       context: context,
@@ -78,34 +88,65 @@ class _AllClassesPageState extends State<AllClassesPage> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  TextField(controller: nombreController, decoration: const InputDecoration(labelText: 'Nombre')),
-                  TextField(controller: descripcionController, decoration: const InputDecoration(labelText: 'Descripción')),
-                  TextField(controller: categoriaController, decoration: const InputDecoration(labelText: 'Categoría')),
+                  TextField(
+                    controller: nombreController,
+                    decoration: const InputDecoration(labelText: 'Nombre'),
+                  ),
+                  TextField(
+                    controller: descripcionController,
+                    decoration:
+                        const InputDecoration(labelText: 'Descripción'),
+                  ),
+                  TextField(
+                    controller: categoriaController,
+                    decoration:
+                        const InputDecoration(labelText: 'Categoría'),
+                  ),
                   const SizedBox(height: 10),
                   const Text('Horarios:'),
-                  ...horarioControllers.asMap().entries.map((entry) {
+                  ...horasSeleccionadas.asMap().entries.map((entry) {
                     final index = entry.key;
-                    final controller = entry.value;
+                    final hora = entry.value;
+
                     return Row(
                       children: [
                         Expanded(
-                          child: TextField(
-                            controller: controller,
-                            decoration: InputDecoration(labelText: 'Hora ${index + 1}'),
+                          child: TextButton(
+                            onPressed: () async {
+                              final nuevaHora = await showTimePicker(
+                                context: context,
+                                initialTime:
+                                    hora ?? const TimeOfDay(hour: 9, minute: 0),
+                              );
+                              if (nuevaHora != null) {
+                                setStateDialog(() {
+                                  horasSeleccionadas[index] = nuevaHora;
+                                });
+                              }
+                            },
+                            child: Text(
+                              hora != null
+                                  ? hora.format(context)
+                                  : 'Seleccionar hora',
+                            ),
                           ),
                         ),
                         IconButton(
                           icon: const Icon(Icons.delete),
                           onPressed: () {
-                            setStateDialog(() => horarioControllers.removeAt(index));
+                            setStateDialog(() {
+                              horasSeleccionadas.removeAt(index);
+                            });
                           },
-                        ),
+                        )
                       ],
                     );
                   }).toList(),
                   TextButton.icon(
                     onPressed: () {
-                      setStateDialog(() => horarioControllers.add(TextEditingController()));
+                      setStateDialog(() {
+                        horasSeleccionadas.add(null);
+                      });
                     },
                     icon: const Icon(Icons.add),
                     label: const Text('Agregar horario'),
@@ -115,12 +156,24 @@ class _AllClassesPageState extends State<AllClassesPage> {
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancelar'),
+            ),
             ElevatedButton(
               onPressed: () async {
-                final horarios = horarioControllers
-                    .where((c) => c.text.trim().isNotEmpty)
-                    .map((c) => HorarioClase(hora: c.text.trim()))
+                final hoy = DateTime.now();
+                final fechaSeleccionada =
+                    DateTime(hoy.year, hoy.month, hoy.day)
+                        .toIso8601String()
+                        .split('T')[0];
+
+                final horarios = horasSeleccionadas
+                    .where((h) => h != null)
+                    .map((h) => HorarioClase(
+                          hora: h!.format(context),
+                          fecha: fechaSeleccionada,
+                        ))
                     .toList();
 
                 final nuevaClase = Clase(
@@ -149,7 +202,9 @@ class _AllClassesPageState extends State<AllClassesPage> {
                   await cargarClases();
                   Navigator.pop(context);
                 } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error: $e')),
+                  );
                   Navigator.pop(context);
                 }
               },
@@ -166,12 +221,13 @@ class _AllClassesPageState extends State<AllClassesPage> {
       await claseService.deleteClase(id);
       await cargarClases();
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error al eliminar: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al eliminar: $e')),
+      );
     }
   }
 
   void reservarClase(int claseId, String hora) {
-    // Aquí puedes llamar a un método de ClaseService para manejar reservas
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Reservaste la clase a las $hora')),
     );
@@ -186,10 +242,7 @@ class _AllClassesPageState extends State<AllClassesPage> {
         elevation: 0,
         title: const Text(
           'Todas las clases',
-          style: TextStyle(
-            color: Colors.black87,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
         iconTheme: const IconThemeData(color: Colors.black87),
@@ -222,7 +275,10 @@ class _AllClassesPageState extends State<AllClassesPage> {
                             CircleAvatar(
                               backgroundColor: color,
                               radius: 30,
-                              child: const Icon(Icons.fitness_center, color: Colors.white),
+                              child: const Icon(
+                                Icons.fitness_center,
+                                color: Colors.white,
+                              ),
                             ),
                             const SizedBox(width: 20),
                             Expanded(
@@ -249,15 +305,21 @@ class _AllClassesPageState extends State<AllClassesPage> {
                                       title: const Text('Eliminar Clase'),
                                       content: const Text('¿Estás seguro de que deseas eliminar esta clase?'),
                                       actions: [
-                                        TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancelar')),
-                                        TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Eliminar')),
+                                        TextButton(
+                                          onPressed: () => Navigator.pop(context, false),
+                                          child: const Text('Cancelar'),
+                                        ),
+                                        TextButton(
+                                          onPressed: () => Navigator.pop(context, true),
+                                          child: const Text('Eliminar'),
+                                        ),
                                       ],
                                     ),
                                   );
                                   if (confirm == true) eliminarClase(clase.id!);
                                 },
                               ),
-                            ],
+                            ]
                           ],
                         ),
                         const SizedBox(height: 10),
@@ -269,9 +331,7 @@ class _AllClassesPageState extends State<AllClassesPage> {
                               return ActionChip(
                                 label: Text(hora),
                                 onPressed: () {
-                                  if (!isAdmin) {
-                                    reservarClase(clase.id!, hora);
-                                  }
+                                  if (!isAdmin) reservarClase(clase.id!, hora);
                                 },
                               );
                             }).toList(),
