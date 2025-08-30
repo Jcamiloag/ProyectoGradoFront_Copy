@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:hola_mundo/views/reservations/reserva_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:hola_mundo/models/clase.dart';
-import 'package:hola_mundo/models/horario_clase.dart';
 import 'package:hola_mundo/services/clase_service.dart';
 
 class CalendarView extends StatefulWidget {
@@ -21,6 +22,7 @@ class _CalendarViewState extends State<CalendarView> {
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
   Map<DateTime, List<Clase>> _clasesPorDia = {};
+  final Set<String> _reservasConfirmadas = {}; // << guarda "claseId-fecha-hora"
 
   @override
   void initState() {
@@ -74,242 +76,55 @@ class _CalendarViewState extends State<CalendarView> {
   }
 
   Future<void> _mostrarDialogoReserva(Clase clase, String hora) async {
-  return showDialog<void>(
-    context: context,
-    builder: (_) => AlertDialog(
-      title: const Text('Confirmar Reserva'),
-      content: Text('¿Reservar ${clase.nombre} a las $hora?'),
-      actions: [
-        TextButton(
-          child: const Text('Cancelar'),
-          onPressed: () => Navigator.of(context).maybePop(), // ← Corrección
-        ),
-        TextButton(
-          child: const Text('Confirmar'),
-          onPressed: () async {
-            Navigator.of(context).maybePop(); // ← Corrección
+    final fecha = DateFormat('yyyy-MM-dd').format(_selectedDay!);
+    final reservaService = ReservaService();
 
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                    'Reserva confirmada para ${clase.nombre} a las $hora'),
-              ),
-            );
-
-            await _cargarClases(); // Refresca la vista
-          },
-        ),
-      ],
-    ),
-  );
-}
-
-
-  void _mostrarFormularioDeReserva(DateTime selectedDate) {
-    final clasesDelDia = _getClasesDelDia(selectedDate);
-
-    if (clasesDelDia.isEmpty) {
-      showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: const Text('Sin clases disponibles'),
-          content: const Text('No hay clases programadas para este día.'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).maybePop(),
-              child: const Text('OK'),
-            ),
-          ],
-        ),
-      );
-      return;
-    }
-
-    Clase? claseSeleccionada;
-    String? horaSeleccionada;
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setStateDialog) {
-            final clasesUnicas = {
-              for (var c in clasesDelDia) c.id!: c
-            }.values.toList(); // Únicas por ID
-
-            return AlertDialog(
-              title: const Text('Reservar clase'),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  DropdownButton<Clase>(
-                    value: claseSeleccionada,
-                    isExpanded: true,
-                    hint: const Text('Selecciona una clase'),
-                    items: clasesUnicas.map((clase) {
-                      return DropdownMenuItem<Clase>(
-                        value: clase,
-                        child: Text(clase.nombre),
-                      );
-                    }).toList(),
-                    onChanged: (nuevaClase) {
-                      setStateDialog(() {
-                        claseSeleccionada = nuevaClase;
-                        horaSeleccionada = null;
-                      });
-                    },
-                  ),
-                  if (claseSeleccionada != null)
-                    DropdownButton<String>(
-                      value: horaSeleccionada,
-                      isExpanded: true,
-                      hint: const Text('Selecciona un horario'),
-                      items: claseSeleccionada!.horarios!
-                          .where((h) =>
-                              h.fecha ==
-                              DateFormat('yyyy-MM-dd')
-                                  .format(selectedDate))
-                          .map((horario) {
-                        return DropdownMenuItem<String>(
-                          value: horario.hora,
-                          child: Text(horario.hora),
-                        );
-                      }).toList(),
-                      onChanged: (nuevaHora) {
-                        setStateDialog(() {
-                          horaSeleccionada = nuevaHora;
-                        });
-                      },
-                    ),
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Cancelar'),
-                ),
-                ElevatedButton(
-                  onPressed: (claseSeleccionada != null &&
-                          horaSeleccionada != null)
-                      ? () async {
-                          Navigator.of(context).pop();
-                          await _mostrarDialogoReserva(
-                            claseSeleccionada!,
-                            horaSeleccionada!,
-                          );
-                        }
-                      : null,
-                  child: const Text('Reservar'),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
-  }
-
-  void _showAddReservationDialog(DateTime selectedDate) {
-  final clasesDelDia = _getClasesDelDia(selectedDate).toSet().toList(); // ← Evita duplicados
-
-  if (clasesDelDia.isEmpty) {
-    showDialog(
+    return showDialog<void>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Sin clases disponibles'),
-        content: const Text('No hay clases programadas para este día.'),
+        title: const Text('Confirmar Reserva'),
+        content: Text('¿Reservar ${clase.nombre} a las $hora?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).maybePop(), // ← Seguro
-            child: const Text('OK'),
+            child: const Text('Cancelar'),
+            onPressed: () => Navigator.of(context).maybePop(),
+          ),
+          TextButton(
+            child: const Text('Confirmar'),
+            onPressed: () async {
+              Navigator.of(context).maybePop();
+
+              final confirmada = await reservaService.hacerReserva(
+                claseId: clase.id!,
+                fecha: fecha,
+                hora: hora,
+              );
+
+              if (confirmada) {
+                setState(() {
+                  _reservasConfirmadas.add("${clase.id}-$fecha-$hora");
+                });
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('✅ Reserva confirmada para ${clase.nombre} a las $hora'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('❌ Error al realizar la reserva'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
           ),
         ],
       ),
     );
-    return;
   }
-
-  showDialog(
-    context: context,
-    builder: (context) {
-      Clase? claseSeleccionada;
-      String? horaSeleccionada;
-
-      return StatefulBuilder(
-        builder: (context, setState) {
-          return AlertDialog(
-            title: const Text('Reservar clase'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                DropdownButton<Clase>(
-                  value: claseSeleccionada,
-                  hint: const Text('Selecciona una clase'),
-                  isExpanded: true,
-                  items: clasesDelDia.map((clase) {
-                    return DropdownMenuItem<Clase>(
-                      value: clase,
-                      child: Text(clase.nombre),
-                    );
-                  }).toList(),
-                  onChanged: (nuevaClase) {
-                    setState(() {
-                      claseSeleccionada = nuevaClase;
-                      horaSeleccionada = null;
-                    });
-                  },
-                ),
-                if (claseSeleccionada != null)
-                  DropdownButton<String>(
-                    value: horaSeleccionada,
-                    hint: const Text('Selecciona horario'),
-                    isExpanded: true,
-                    items: claseSeleccionada!.horarios!
-                        .where((h) =>
-                            h.fecha ==
-                            DateFormat('yyyy-MM-dd').format(selectedDate))
-                        .map((horario) => DropdownMenuItem<String>(
-                              value: horario.hora,
-                              child: Text(horario.hora),
-                            ))
-                        .toList(),
-                    onChanged: (nuevaHora) {
-                      setState(() {
-                        horaSeleccionada = nuevaHora;
-                      });
-                    },
-                  ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).maybePop(), // ← Aquí también
-                child: const Text('Cancelar'),
-              ),
-              ElevatedButton(
-                onPressed: claseSeleccionada != null && horaSeleccionada != null
-                    ? () async {
-                        Navigator.of(context).maybePop(); // ← Aquí también
-
-                        await _mostrarDialogoReserva(
-                          claseSeleccionada!,
-                          horaSeleccionada!,
-                        );
-
-                        final nuevasClases = await _claseService.getClases();
-                        _organizarClasesPorDia(nuevasClases);
-                      }
-                    : null,
-                child: const Text('Reservar'),
-              ),
-            ],
-          );
-        },
-      );
-    },
-  );
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -328,7 +143,6 @@ class _CalendarViewState extends State<CalendarView> {
                 _selectedDay = selectedDay;
                 _focusedDay = focusedDay;
               });
-              _mostrarFormularioDeReserva(selectedDay);
             },
             onFormatChanged: (format) {
               setState(() => _calendarFormat = format);
@@ -368,9 +182,7 @@ class _CalendarViewState extends State<CalendarView> {
                     final clase = clasesDelDia[index];
                     final horarios = clase.horarios!
                         .where((h) =>
-                            h.fecha ==
-                            DateFormat('yyyy-MM-dd')
-                                .format(_selectedDay!))
+                            h.fecha == DateFormat('yyyy-MM-dd').format(_selectedDay!))
                         .toList();
 
                     return Card(
@@ -391,12 +203,19 @@ class _CalendarViewState extends State<CalendarView> {
                             Wrap(
                               spacing: 8,
                               children: horarios.map((h) {
+                                final key = "${clase.id}-${h.fecha}-${h.hora}";
+                                final reservado = _reservasConfirmadas.contains(key);
+
                                 return ActionChip(
-                                  label: Text(h.hora),
-                                  onPressed: () => _mostrarDialogoReserva(
-                                    clase,
-                                    h.hora,
-                                  ),
+                                  label: reservado
+                                      ? Text("✔ ${h.hora}",
+                                          style: const TextStyle(
+                                              color: Colors.green,
+                                              fontWeight: FontWeight.bold))
+                                      : Text(h.hora),
+                                  onPressed: reservado
+                                      ? null
+                                      : () => _mostrarDialogoReserva(clase, h.hora),
                                 );
                               }).toList(),
                             ),

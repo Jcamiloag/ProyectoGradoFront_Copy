@@ -43,11 +43,14 @@ class _LoginPageState extends State<LoginPage> {
       try {
         final decodedToken = JwtDecoder.decode(token);
         final role = decodedToken['role'] ?? 'USER';
-        final name = decodedToken['name'] ?? emailCtrl.text.trim(); // usar nombre si viene
+        final name = decodedToken['name'] ?? emailCtrl.text.trim();
+        final userId = decodedToken['id'];
 
         await prefs.setString('token', token);
-        await prefs.setString('username', name); // guardar nombre, no correo
-        await prefs.setString('rol', role);
+        await prefs.setString('username', name);
+        await prefs.setString('role', role);
+        await prefs.setInt('id', userId); // ✅ Guardar el ID
+
       } catch (e) {
         setState(() {
           errorMessage = 'Error al procesar el token';
@@ -83,7 +86,6 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 32),
 
-              // Email field
               Container(
                 decoration: BoxDecoration(
                   color: Colors.grey[100],
@@ -110,7 +112,6 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 20),
 
-              // Password field
               Container(
                 decoration: BoxDecoration(
                   color: Colors.grey[100],
@@ -154,7 +155,6 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
 
-              // Login Button
               GestureDetector(
                 onTap: isLoading ? null : login,
                 child: Container(
