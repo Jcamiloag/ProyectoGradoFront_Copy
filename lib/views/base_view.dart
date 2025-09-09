@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'custom_drawer.dart'; // Importa el Drawer personalizado
+// Importa el Drawer personalizado
 import 'package:go_router/go_router.dart'; // Para navegación
 
 class BaseView extends StatelessWidget {
@@ -37,10 +37,8 @@ class BaseView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(title), backgroundColor: Colors.red),
-      drawer: const CustomDrawer(),
+      appBar: null,
       body: body,
-      floatingActionButton: floatingActionButton,
     );
   }
 }

@@ -1,48 +1,48 @@
 import 'dart:convert';
-import 'package:hola_mundo/models/user.dart';
+import 'package:hola_mundo/config.dart' as AppConstants;
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hola_mundo/models/user.dart';
 
 class AuthService {
-  final String baseUrl = 'http://192.168.18.5:8080'; // Actualiza según corresponda
+  final String baseUrl = AppConstants.baseUrl;
 
-  Future<Map<String, dynamic>> login(String username, String password) async {
+  Future<Map<String, dynamic>> login(String email, String password) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/auth/login'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'username': username,
-          'password': password,
-        }),
+        body: jsonEncode({'email': email, 'password': password}),
       );
 
-      print('Register - Response status: ${response.statusCode}');
-      print('Register - Response body: ${response.body}');
-
       final data = jsonDecode(response.body);
-      
+
       if (response.statusCode == 200) {
         final prefs = await SharedPreferences.getInstance();
+
+        final userObj = User(
+          id: data['id'],
+          username: data['username'] ?? email,
+          firstname: data['firstname'] ?? '',
+          lastname: data['lastname'] ?? '',
+          email: email,
+          phonenumber: data['phonenumber'] ?? '',
+          role: data['role'] ?? 'USER',
+        );
+
         await prefs.setString('token', data['token']);
-      if (data['user'] != null) {
-          await prefs.setString('user', jsonEncode(data['user']));
-        }
+        await prefs.setString('user', jsonEncode(userObj.toJson()));
+        await prefs.setString('username', userObj.username);
+        await prefs.setString('role', userObj.role);
+
         return {'success': true, 'token': data['token']};
       } else {
-        return {
-          'success': false,
-          'message': data['error'] ?? 'Error en login'
-        };
+        return {'success': false, 'message': data['error'] ?? 'Error en login'};
       }
     } catch (e) {
-      return {
-        'success': false,
-        'message': 'Error de conexión: $e'
-      };
+      return {'success': false, 'message': 'Error de conexión: $e'};
     }
   }
-
 
   Future<Map<String, dynamic>> register({
     required String name,
@@ -53,9 +53,6 @@ class AuthService {
     required String password,
   }) async {
     try {
-      print('Iniciando registro...'); // Log inicial
-      print('Datos a enviar: username: $username, name: $name, lastname: $last_Name, email: $email, phone: $phone'); // Log de datos
-
       final body = jsonEncode({
         'username': username,
         'password': password,
@@ -63,10 +60,8 @@ class AuthService {
         'lastname': last_Name,
         'email': email,
         'phonenumber': phone,
-        'role': 'USER'
+        'role': 'USER',
       });
-
-      print('Body del request: $body'); // Log del body
 
       final response = await http.post(
         Uri.parse('$baseUrl/auth/register'),
@@ -74,65 +69,73 @@ class AuthService {
         body: body,
       );
 
-      print('Register - Response status: ${response.statusCode}');
-      print('Register - Response body: ${response.body}');
+      final data = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
         final prefs = await SharedPreferences.getInstance();
+
+        final userObj = User(
+          id: data['id'],
+          username: data['username'] ?? username,
+          firstname: data['firstname'] ?? name,
+          lastname: data['lastname'] ?? last_Name,
+          email: email,
+          phonenumber: data['phonenumber'] ?? phone,
+          role: data['role'] ?? 'USER',
+        );
+
         await prefs.setString('token', data['token']);
+        await prefs.setString('user', jsonEncode(userObj.toJson()));
+        await prefs.setString('username', userObj.username);
+        await prefs.setString('role', userObj.role);
+
         return {'success': true};
       } else {
-        print('Error en registro - Status code: ${response.statusCode}');
-        print('Error en registro - Body: ${response.body}');
         return {
           'success': false,
-          'message': 'Error en registro: ${response.statusCode}'
+          'message': 'Error en registro: ${response.statusCode}',
         };
       }
     } catch (e) {
-      print('Error de conexión: $e'); // Log del error
-      return {
-        'success': false,
-        'message': 'Error de conexión: $e'
-      };
-    }
-}
-
-  Future<String?> getToken() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      return prefs.getString('token');
-    } catch (e) {
-      print('Error obteniendo token: $e');
-      return null;
+      return {'success': false, 'message': 'Error de conexión: $e'};
     }
   }
 
   Future<User?> getUser() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final userStr = prefs.getString('user');
-      if (userStr != null) {
+    final prefs = await SharedPreferences.getInstance();
+    final userStr = prefs.getString('user');
+    if (userStr != null && userStr.isNotEmpty) {
+      try {
         return User.fromJson(jsonDecode(userStr));
+      } catch (_) {
+        return null;
       }
-      return null;
-    } catch (e) {
-      print('Error obteniendo usuario: $e');
-      return null;
     }
+    return null;
+  }
+
+  Future<String?> getToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    return token?.isNotEmpty == true ? token : null;
+  }
+
+  Future<String?> getUsername() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('username');
+  }
+
+  Future<String?> getRole() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('role');
   }
 
   Future<bool> logout() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove('token');
-      await prefs.remove('user');
-      return true;
-    } catch (e) {
-      print('Error en logout: $e');
-      return false;
-    }
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('token');
+    await prefs.remove('user');
+    await prefs.remove('username');
+    await prefs.remove('role');
+    return true;
   }
-  
 }
