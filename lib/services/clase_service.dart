@@ -41,24 +41,25 @@ class ClaseService {
   }
 
   Future<void> updateClase(Clase clase) async {
-    final response = await http.put(
-      Uri.parse("$claseUrl/${clase.id}"),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(clase.toJson()),
-    );
+  final response = await http.put(
+    Uri.parse("$claseUrl/${clase.id}"),
+    headers: {'Content-Type': 'application/json'},
+    body: jsonEncode(clase.toJson()),
+  );
 
-    if (response.statusCode != 200) {
-      throw Exception("Error al actualizar la clase");
-    }
+  if (response.statusCode != 200 && response.statusCode != 204) {
+    throw Exception("Error al actualizar la clase");
   }
+}
 
-  Future<void> deleteClase(int id) async {
-    final response = await http.delete(Uri.parse("$claseUrl/$id"));
+Future<void> deleteClase(int id) async {
+  final response = await http.delete(Uri.parse("$claseUrl/$id"));
 
-    if (response.statusCode != 200) {
-      throw Exception("Error al eliminar la clase");
-    }
+  if (response.statusCode != 200 && response.statusCode != 204) {
+    throw Exception("Error al eliminar la clase");
   }
+}
+
 
   Future<void> agregarHorario(int claseId, HorarioClase horario) async {
     final response = await http.post(
