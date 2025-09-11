@@ -5,7 +5,7 @@ import 'package:hola_mundo/config.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ReservaService {
-  final String reservaUrl = '$baseUrl/reservas';
+  final String reservaUrl = '$baseUrl/api/reservas';
 
   Future<String?> _getToken() async {
     final prefs = await SharedPreferences.getInstance();
