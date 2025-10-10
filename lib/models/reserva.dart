@@ -1,30 +1,25 @@
 class Reserva {
-  final int? id;
+  final int id;
   final int claseId;
+  final String claseNombre;
   final String fecha;
   final String hora;
 
   Reserva({
-    this.id,
+    required this.id,
     required this.claseId,
+    required this.claseNombre,
     required this.fecha,
     required this.hora,
   });
 
   factory Reserva.fromJson(Map<String, dynamic> json) {
     return Reserva(
-      id: json['id'],
-      claseId: json['clase']['id'], // el backend devuelve la clase completa
-      fecha: json['fecha'],
-      hora: json['hora'],
+      id: json['id'] ?? 0,
+      claseId: json['claseId'] ?? 0,
+      claseNombre: json['claseNombre'] ?? 'Clase sin nombre',
+      fecha: json['fecha'] ?? '',
+      hora: json['hora'] ?? '',
     );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      "claseId": claseId,
-      "fecha": fecha,
-      "hora": hora,
-    };
   }
 }
