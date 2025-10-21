@@ -140,9 +140,17 @@ class _CalendarViewState extends State<CalendarView> {
                             ),
                             actions: [
                               TextButton(
-                                onPressed:
-                                    () => Navigator.of(context).maybePop(),
-                                child: const Text("Perfecto"),
+                                onPressed: () {
+                                  if (Navigator.of(context).canPop()) {
+                                    Navigator.of(
+                                      context,
+                                    ).pop(); // 🔹 Cierra solo el diálogo
+                                  }
+                                },
+                                child: const Text(
+                                  "Perfecto",
+                                  style: TextStyle(color: Colors.blue),
+                                ),
                               ),
                             ],
                           ),
