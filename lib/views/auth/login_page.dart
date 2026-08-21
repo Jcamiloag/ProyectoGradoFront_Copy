@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hola_mundo/services/auth_service.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:jwt_decoder/jwt_decoder.dart';
 
 class LoginPage extends StatefulWidget {
   final bool isTabMode;
@@ -17,11 +15,12 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final emailCtrl = TextEditingController();
   final passwordCtrl = TextEditingController();
+
   bool isLoading = false;
   bool obscureText = true;
   String? errorMessage;
 
-  void login() async {
+  Future<void> login() async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() {
@@ -34,29 +33,27 @@ class _LoginPageState extends State<LoginPage> {
       passwordCtrl.text.trim(),
     );
 
-    setState(() => isLoading = false);
+    if (!mounted) return;
+
+    setState(() {
+      isLoading = false;
+    });
 
     if (result['success']) {
-      final token = result['token'];
-      final prefs = await SharedPreferences.getInstance();
 
-      try {
-        final decodedToken = JwtDecoder.decode(token);
-        final role = decodedToken['role'] ?? 'USER';
-        final name = decodedToken['name'] ?? emailCtrl.text.trim(); // usar nombre si viene
+      print("================================");
+      print("LOGIN EXITOSO");
+      print("ANTES DE GO: ${GoRouterState.of(context).uri}");
 
-        await prefs.setString('token', token);
-        await prefs.setString('username', name); // guardar nombre, no correo
-        await prefs.setString('rol', role);
-      } catch (e) {
-        setState(() {
-          errorMessage = 'Error al procesar el token';
-        });
-        return;
-      }
-
-      if (!mounted) return;
       context.go('/');
+
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted) {
+          print("DESPUÉS DE GO: ${GoRouterState.of(context).uri}");
+          print("================================");
+        }
+      });
+
     } else {
       setState(() {
         errorMessage = result['message'] ?? 'Error al iniciar sesión';
@@ -66,7 +63,7 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = Colors.redAccent;
+    const primaryColor = Colors.redAccent;
 
     return Padding(
       padding: const EdgeInsets.all(24.0),
@@ -77,23 +74,24 @@ class _LoginPageState extends State<LoginPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 8),
+
               const Text(
                 "Ingresa para continuar tu camino con Farfala",
                 style: TextStyle(color: Colors.grey),
               ),
+
               const SizedBox(height: 32),
 
-              // Email field
               Container(
                 decoration: BoxDecoration(
                   color: Colors.grey[100],
                   borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
+                  boxShadow: const [
                     BoxShadow(
                       color: Colors.black12,
                       blurRadius: 4,
                       offset: Offset(0, 2),
-                    )
+                    ),
                   ],
                 ),
                 child: TextFormField(
@@ -105,22 +103,24 @@ class _LoginPageState extends State<LoginPage> {
                     contentPadding: EdgeInsets.symmetric(vertical: 18),
                   ),
                   validator: (value) =>
-                      value!.isEmpty ? 'Ingresa tu Email' : null,
+                      value == null || value.isEmpty
+                          ? 'Ingresa tu Email'
+                          : null,
                 ),
               ),
+
               const SizedBox(height: 20),
 
-              // Password field
               Container(
                 decoration: BoxDecoration(
                   color: Colors.grey[100],
                   borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
+                  boxShadow: const [
                     BoxShadow(
                       color: Colors.black12,
                       blurRadius: 4,
                       offset: Offset(0, 2),
-                    )
+                    ),
                   ],
                 ),
                 child: TextFormField(
@@ -131,18 +131,27 @@ class _LoginPageState extends State<LoginPage> {
                     border: InputBorder.none,
                     prefixIcon: const Icon(Icons.lock_outline),
                     suffixIcon: IconButton(
-                      icon: Icon(obscureText
-                          ? Icons.visibility_off
-                          : Icons.visibility),
-                      onPressed: () =>
-                          setState(() => obscureText = !obscureText),
+                      icon: Icon(
+                        obscureText
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          obscureText = !obscureText;
+                        });
+                      },
                     ),
-                    contentPadding: const EdgeInsets.symmetric(vertical: 18),
+                    contentPadding:
+                        const EdgeInsets.symmetric(vertical: 18),
                   ),
                   validator: (value) =>
-                      value!.isEmpty ? 'Ingresa tu contraseña' : null,
+                      value == null || value.isEmpty
+                          ? 'Ingresa tu contraseña'
+                          : null,
                 ),
               ),
+
               const SizedBox(height: 16),
 
               if (errorMessage != null)
@@ -150,32 +159,44 @@ class _LoginPageState extends State<LoginPage> {
                   padding: const EdgeInsets.only(bottom: 12),
                   child: Text(
                     errorMessage!,
-                    style: const TextStyle(color: Colors.red),
+                    style: const TextStyle(
+                      color: Colors.red,
+                    ),
                   ),
                 ),
 
-              // Login Button
               GestureDetector(
                 onTap: isLoading ? null : login,
                 child: Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 16),
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(30),
                     gradient: const LinearGradient(
-                      colors: [Colors.redAccent, Colors.red],
+                      colors: [
+                        Colors.redAccent,
+                        Colors.red,
+                      ],
                     ),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.red.withOpacity(0.4),
                         blurRadius: 8,
                         offset: const Offset(0, 4),
-                      )
+                      ),
                     ],
                   ),
                   child: isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
+                      ? const SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2.5,
+                          ),
+                        )
                       : const Text(
                           "INICIAR SESIÓN",
                           style: TextStyle(
@@ -201,14 +222,14 @@ class _LoginPageState extends State<LoginPage> {
                         DefaultTabController.of(context).animateTo(1);
                       }
                     },
-                    child: Text(
+                    child: const Text(
                       "Crear cuenta",
                       style: TextStyle(
                         color: primaryColor,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                  )
+                  ),
                 ],
               ),
             ],

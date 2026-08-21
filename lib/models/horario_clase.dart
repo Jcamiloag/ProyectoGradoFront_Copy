@@ -1,21 +1,68 @@
-
 class HorarioClase {
-  String hora;
+
+  int? id;
+
   String? fecha;
 
-  HorarioClase({required this.hora, this.fecha});
+  String? hora;
+
+  int? cupos;
+
+  int? cuposDisponibles;
+
+
+  HorarioClase({
+
+    this.id,
+
+    this.fecha,
+
+    this.hora,
+
+    this.cupos,
+
+    this.cuposDisponibles,
+
+  });
+
+
 
   factory HorarioClase.fromJson(Map<String, dynamic> json) {
+
     return HorarioClase(
-      hora: json['hora'],
+
+      id: json['id'],
+
       fecha: json['fecha'],
+
+      hora: json['hora'],
+
+      cupos: json['cupos'],
+
+      cuposDisponibles: json['cuposDisponibles'],
+
     );
+
   }
 
+
+
   Map<String, dynamic> toJson() {
+
     return {
-      'hora': hora,
-      'fecha': fecha,
+
+      "id": id,
+
+      "fecha": fecha,
+
+      "hora": hora,
+
+      "cupos": cupos,
+
+      "cuposDisponibles": cuposDisponibles,
+
     };
+
   }
+
 }

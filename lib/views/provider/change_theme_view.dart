@@ -8,76 +8,204 @@ class ChangeThemeView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
-    final currentColor = themeProvider.color;
-
-    final List<Color> availableColors = [
-      const Color.fromARGB(255, 20, 83, 165), // Azul por defecto
-      Colors.red,
-      Colors.green,
-      Colors.purple,
-      Colors.orange,
-      Colors.teal,
-    ];
+    final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Cambiar tema')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Modo de tema', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 10),
-            DropdownButton<ThemeMode>(
-              value: themeProvider.themeMode,
-              onChanged: (ThemeMode? newMode) {
-                if (newMode != null) {
-                  themeProvider.setThemeMode(newMode);
-                }
-              },
-              items: const [
-                DropdownMenuItem(
-                  value: ThemeMode.system,
-                  child: Text('Usar modo del sistema'),
-                ),
-                DropdownMenuItem(
-                  value: ThemeMode.light,
-                  child: Text('Modo claro'),
-                ),
-                DropdownMenuItem(
-                  value: ThemeMode.dark,
-                  child: Text('Modo oscuro'),
-                ),
-              ],
+      appBar: AppBar(
+        title: const Text(
+          "Apariencia",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        elevation: 0,
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(20),
+        children: [
+          Text(
+            "Personaliza la experiencia de la aplicación.",
+            style: TextStyle(
+              color: theme.colorScheme.onSurface.withOpacity(.7),
+              fontSize: 15,
             ),
-            const SizedBox(height: 20),
-            const Text('Color del tema', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 10),
-            Expanded(
-              child: GridView.count(
-                crossAxisCount: 3,
-                children: availableColors.map((color) {
-                  return GestureDetector(
-                    onTap: () {
-                      themeProvider.setColor(color);
-                    },
-                    child: Container(
-                      margin: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: color,
-                        border: Border.all(
-                          color: currentColor == color ? Colors.black : Colors.transparent,
-                          width: 4,
-                        ),
+          ),
+
+          const SizedBox(height: 24),
+
+          //================== TEMA ==================
+
+          Card(
+            elevation: 1,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Column(
+                children: [
+                  const ListTile(
+                    leading: Icon(Icons.dark_mode_rounded),
+                    title: Text(
+                      "Tema",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
                       ),
                     ),
-                  );
-                }).toList(),
+                    subtitle: Text(
+                      "Selecciona el modo de visualización.",
+                    ),
+                  ),
+                  const Divider(height: 1),
+
+                  RadioListTile<ThemeMode>(
+                    title: const Text("Usar configuración del sistema"),
+                    secondary: const Icon(Icons.phone_android),
+                    value: ThemeMode.system,
+                    groupValue: themeProvider.themeMode,
+                    onChanged: (value) {
+                      if (value != null) {
+                        themeProvider.setThemeMode(value);
+                      }
+                    },
+                  ),
+
+                  RadioListTile<ThemeMode>(
+                    title: const Text("Modo claro"),
+                    secondary: const Icon(Icons.light_mode),
+                    value: ThemeMode.light,
+                    groupValue: themeProvider.themeMode,
+                    onChanged: (value) {
+                      if (value != null) {
+                        themeProvider.setThemeMode(value);
+                      }
+                    },
+                  ),
+
+                  RadioListTile<ThemeMode>(
+                    title: const Text("Modo oscuro"),
+                    secondary: const Icon(Icons.dark_mode),
+                    value: ThemeMode.dark,
+                    groupValue: themeProvider.themeMode,
+                    onChanged: (value) {
+                      if (value != null) {
+                        themeProvider.setThemeMode(value);
+                      }
+                    },
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+
+          const SizedBox(height: 20),
+
+          //================== TEXTO ==================
+
+          Card(
+            elevation: 1,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Row(
+                    children: [
+                      Icon(Icons.text_fields),
+                      SizedBox(width: 10),
+                      Text(
+                        "Tamaño del texto",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  Text(
+                    "Ajusta el tamaño de la letra para toda la aplicación.",
+                    style: TextStyle(
+                      color: theme.colorScheme.onSurface.withOpacity(.7),
+                    ),
+                  ),
+
+                  const SizedBox(height: 18),
+
+                  Row(
+                    children: [
+                      const Text(
+                        "A",
+                        style: TextStyle(fontSize: 14),
+                      ),
+                      Expanded(
+                        child: Slider(
+                          value: themeProvider.textScale,
+                          min: .9,
+                          max: 1.3,
+                          divisions: 4,
+                          label:
+                              "${(themeProvider.textScale * 100).round()}%",
+                          onChanged: (value) {
+                            themeProvider.setTextScale(value);
+                          },
+                        ),
+                      ),
+                      const Text(
+                        "A",
+                        style: TextStyle(fontSize: 22),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.primaryContainer
+                          .withOpacity(.35),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: const Text(
+                      "Así se verá el texto en toda la aplicación.",
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          //================== INFORMACIÓN ==================
+
+          Card(
+            elevation: 1,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: const ListTile(
+              leading: Icon(Icons.info_outline),
+              title: Text(
+                "Información",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              subtitle: Text(
+                "Versión 1.0.0",
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 30),
+        ],
       ),
     );
   }

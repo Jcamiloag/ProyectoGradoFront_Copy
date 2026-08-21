@@ -2,26 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ThemeProvider with ChangeNotifier {
-  Color _color = const Color.fromARGB(255, 20, 83, 165);
+  // Color institucional de la aplicación (rojo)
+  final Color _color = const Color(0xFFD32F2F);
+
   ThemeMode _themeMode = ThemeMode.system;
+  double _textScale = 1.0;
 
   Color get color => _color;
   ThemeMode get themeMode => _themeMode;
+  double get textScale => _textScale;
 
   ThemeProvider() {
-    _loadPreferences(); // Carga tanto color como modo de tema
+    _loadPreferences();
   }
 
   Future<void> _loadPreferences() async {
     final prefs = await SharedPreferences.getInstance();
 
-    // Carga color
-    final colorGuardado = prefs.getString('color');
-    if (colorGuardado != null) {
-      _color = Color(int.parse(colorGuardado));
-    }
-
-    // Carga modo de tema
+    // Cargar modo de tema
     final modoGuardado = prefs.getString('themeMode');
     if (modoGuardado != null) {
       switch (modoGuardado) {
@@ -36,15 +34,10 @@ class ThemeProvider with ChangeNotifier {
       }
     }
 
-    notifyListeners();
-  }
+    // Cargar tamaño del texto
+    _textScale = prefs.getDouble('textScale') ?? 1.0;
 
-  Future<void> setColor(Color newColor) async {
-    _color = newColor;
     notifyListeners();
-
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('color', newColor.value.toString());
   }
 
   Future<void> setThemeMode(ThemeMode mode) async {
@@ -52,6 +45,7 @@ class ThemeProvider with ChangeNotifier {
     notifyListeners();
 
     final prefs = await SharedPreferences.getInstance();
+
     String modeString;
     switch (mode) {
       case ThemeMode.light:
@@ -64,8 +58,24 @@ class ThemeProvider with ChangeNotifier {
       default:
         modeString = 'system';
     }
+
     await prefs.setString('themeMode', modeString);
   }
+
+  Future<void> setTextScale(double scale) async {
+    _textScale = scale;
+    notifyListeners();
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble('textScale', scale);
+  }
+
+  /// Restablece el tamaño del texto al valor por defecto.
+  Future<void> resetTextScale() async {
+    _textScale = 1.0;
+    notifyListeners();
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble('textScale', 1.0);
+  }
 }
-
-
